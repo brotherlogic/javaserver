@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package discovery;
+
+message RegistryEntry {
+	// The ip address associated with this entry
+	string ip = 1;
+
+	// The port number assigned / requested for this entry
+	int32 port = 2;
+
+	// The name of this service
+	string name = 3;
+
+        // Is this an external facing port
+        bool external_port = 4;
+
+        // This is the machine identifier
+        string identifier = 5;
+}
+
+message ServiceList {
+        repeated RegistryEntry services = 1;
+}
+
+message Empty {}
+
+service DiscoveryService {
+	rpc RegisterService (RegistryEntry) returns (RegistryEntry) {}
+
+	rpc Discover (RegistryEntry) returns (RegistryEntry) {}
+
+        rpc ListAllServices (Empty) returns (ServiceList) {}
+}

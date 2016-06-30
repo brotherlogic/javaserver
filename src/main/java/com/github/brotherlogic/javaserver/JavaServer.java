@@ -142,7 +142,7 @@ public abstract class JavaServer {
 		return registry.getPort();
 	}
 
-	public int getport(String server) {
+	public int getPort(String server) {
 		RegistryEntry entry = resolveServer(server);
 		if (entry != null) {
 			return entry.getPort();
@@ -164,11 +164,11 @@ public abstract class JavaServer {
 		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);
 
 		RegistryEntry response = null;
-		RegistryEntry request = RegistryEntry.newBuilder().setName("monitor").build();
+		RegistryEntry request = RegistryEntry.newBuilder().setName(serverName).build();
 		try {
 			response = blockingStub.discover(request);
 		} catch (StatusRuntimeException e) {
-			System.err.println("Unable to find monitor!");
+			System.err.println("Unable to find server: " + serverName);
 			e.printStackTrace();
 		}
 

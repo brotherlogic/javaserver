@@ -24,6 +24,9 @@ public abstract class JavaServer {
 	private RegistryEntry registry;
 	private RegistryEntry monitor;
 
+	private String discoveryHost;
+	private int discoveryPort;
+
 	private String getIPAddress() {
 		try {
 			return InetAddress.getLocalHost().getHostAddress();
@@ -103,6 +106,8 @@ public abstract class JavaServer {
 	 *            Port number of the discovery server
 	 */
 	private void register(String host, int port) {
+		this.discoveryHost = host;
+		this.discoveryPort = port;
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
 		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);
 
@@ -127,6 +132,47 @@ public abstract class JavaServer {
 			System.err.println("Unable to register!");
 			e.printStackTrace();
 		}
+	}
+
+	public String getHost() {
+		return registry.getIp();
+	}
+
+	public int getPort() {
+		return registry.getPort();
+	}
+
+	public int getport(String server) {
+		RegistryEntry entry = resolveServer(server);
+		if (entry != null) {
+			return entry.getPort();
+		}
+		return 0;
+	}
+
+	public String getHost(String server) {
+		RegistryEntry entry = resolveServer(server);
+		if (entry != null) {
+			return entry.getIp();
+		}
+		return null;
+	}
+
+	private RegistryEntry resolveServer(String serverName) {
+		ManagedChannel channel = ManagedChannelBuilder.forAddress(discoveryHost, discoveryPort).usePlaintext(true)
+				.build();
+		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);
+
+		RegistryEntry response = null;
+		RegistryEntry request = RegistryEntry.newBuilder().setName("monitor").build();
+		try {
+			response = blockingStub.discover(request);
+		} catch (StatusRuntimeException e) {
+			System.err.println("Unable to find monitor!");
+			e.printStackTrace();
+		}
+
+		return response;
 	}
 
 	private void getMonitorDetails(String host, int port) {

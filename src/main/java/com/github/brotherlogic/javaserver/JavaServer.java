@@ -22,7 +22,6 @@ public abstract class JavaServer {
 	public abstract String getServerName();
 
 	private RegistryEntry registry;
-	private RegistryEntry monitor;
 
 	private String discoveryHost;
 	private int discoveryPort;
@@ -58,11 +57,13 @@ public abstract class JavaServer {
 			public void run() {
 				while (running) {
 					try {
+						System.out.println("Sleeping!");
 						Thread.sleep(60 * 1000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 
+					System.out.println("Sending heartbeat");
 					sendHeartbeat();
 				}
 			}
@@ -122,8 +123,8 @@ public abstract class JavaServer {
 	}
 
 	private void sendHeartbeat() {
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(monitor.getIp(), monitor.getPort()).usePlaintext(true)
-				.build();
+		ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
+				.usePlaintext(true).build();
 		MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
 
 		try {
@@ -173,18 +174,5 @@ public abstract class JavaServer {
 		}
 
 		return response;
-	}
-
-	private void getMonitorDetails(String host, int port) {
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
-		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);
-
-		RegistryEntry request = RegistryEntry.newBuilder().setName("monitor").build();
-		try {
-			monitor = blockingStub.discover(request);
-		} catch (StatusRuntimeException e) {
-			System.err.println("Unable to find monitor!");
-			e.printStackTrace();
-		}
 	}
 }

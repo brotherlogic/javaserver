@@ -16,6 +16,8 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.StatusRuntimeException;
 import monitorproto.MonitorServiceGrpc;
+import monitorproto.Monitorproto.MessageLog;
+import monitorproto.Monitorproto.ValueLog;
 
 public abstract class JavaServer {
 
@@ -47,6 +49,34 @@ public abstract class JavaServer {
 	public abstract List<BindableService> getServices();
 
 	private boolean running = true;
+
+	public void Log(String message) {
+		ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
+				.usePlaintext(true).build();
+		MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
+
+		try {
+			MessageLog messageLog = MessageLog.newBuilder().setEntry(registry).setMessage(message).build();
+			blockingStub.writeMessageLog(messageLog);
+		} catch (StatusRuntimeException e) {
+			System.err.println("Unable to register!");
+			e.printStackTrace();
+		}
+	}
+
+	public void Log(float value) {
+		ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
+				.usePlaintext(true).build();
+		MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
+
+		try {
+			ValueLog valueLog = ValueLog.newBuilder().setEntry(registry).setValue(value).build();
+			blockingStub.writeValueLog(valueLog);
+		} catch (StatusRuntimeException e) {
+			System.err.println("Unable to register!");
+			e.printStackTrace();
+		}
+	}
 
 	public void Serve(String discoveryHost, int discoveryPort) {
 

@@ -66,7 +66,7 @@ public abstract class JavaServer {
 		return GetAddressLocal(addressType, true);
 	}
 
-	private static String GetAddressLocal(String addressType, boolean retry) {
+	protected static String GetAddressLocal(String addressType, boolean retry) {
 		String address = "";
 		InetAddress lanIp = null;
 		try {
@@ -80,7 +80,7 @@ public abstract class JavaServer {
 				Enumeration<InetAddress> addresses = element.getInetAddresses();
 				while (addresses.hasMoreElements()) {
 					InetAddress ip = addresses.nextElement();
-					if (ip instanceof Inet4Address) {
+					if (ip instanceof Inet4Address && !ip.getHostAddress().contains("127.0.0.1")) {
 
 						if (ip.isSiteLocalAddress()) {
 

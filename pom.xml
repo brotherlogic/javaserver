@@ -5,7 +5,7 @@
   <groupId>com.github.brotherlogic.javaserver</groupId>
   <artifactId>javaserver</artifactId>
   <packaging>jar</packaging>
-  <version>0.8</version>
+  <version>0.9-SNAPSHOT</version>
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Java serving framework</description>
@@ -35,7 +35,7 @@
     <connection>scm:git:git@github.com:brotherogic/javaserver.git</connection>
     <developerConnection>scm:git:git@github.com:brotherlogic/javaserver.git</developerConnection>
     <url>git@github.com:brotherlogic/javaserver.git</url>
-    <tag>javaserver-0.8</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <prerequisites>

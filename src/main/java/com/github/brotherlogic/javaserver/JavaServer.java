@@ -80,7 +80,7 @@ public abstract class JavaServer {
 				Enumeration<InetAddress> addresses = element.getInetAddresses();
 				while (addresses.hasMoreElements()) {
 					InetAddress ip = addresses.nextElement();
-					if (ip instanceof Inet4Address && !ip.getHostAddress().contains("127.0.0.1")) {
+					if (ip instanceof Inet4Address && !ip.getHostAddress().contains("127.0")) {
 
 						if (ip.isSiteLocalAddress()) {
 

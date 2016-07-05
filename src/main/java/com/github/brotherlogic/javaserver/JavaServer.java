@@ -63,6 +63,10 @@ public abstract class JavaServer {
 	}
 
 	private static String GetAddress(String addressType) {
+		return GetAddressLocal(addressType, true);
+	}
+
+	private static String GetAddressLocal(String addressType, boolean retry) {
 		String address = "";
 		InetAddress lanIp = null;
 		try {
@@ -70,6 +74,7 @@ public abstract class JavaServer {
 			String ipAddress = null;
 			Enumeration<NetworkInterface> net = null;
 			net = NetworkInterface.getNetworkInterfaces();
+
 			while (net.hasMoreElements()) {
 				NetworkInterface element = net.nextElement();
 				Enumeration<InetAddress> addresses = element.getInetAddresses();
@@ -88,8 +93,18 @@ public abstract class JavaServer {
 				}
 			}
 
-			if (lanIp == null)
+			if (lanIp == null) {
+				// Sleep for 30 seconds and retry
+				if (retry) {
+					try {
+						Thread.sleep(30 * 1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					return GetAddressLocal(addressType, false);
+				}
 				return null;
+			}
 
 			if (addressType.equals("ip")) {
 

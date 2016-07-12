@@ -149,30 +149,40 @@ public abstract class JavaServer {
 	private boolean running = true;
 
 	public void Log(String message) {
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
-				.usePlaintext(true).build();
-		MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
+		String host = getHost("monitor");
+		int port = getPort("monitor");
 
-		try {
-			MessageLog messageLog = MessageLog.newBuilder().setEntry(registry).setMessage(message).build();
-			blockingStub.writeMessageLog(messageLog);
-		} catch (StatusRuntimeException e) {
-			System.err.println("Unable to register!");
-			e.printStackTrace();
+		if (host != null && port > 0) {
+			ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
+					.usePlaintext(true).build();
+			MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
+
+			try {
+				MessageLog messageLog = MessageLog.newBuilder().setEntry(registry).setMessage(message).build();
+				blockingStub.writeMessageLog(messageLog);
+			} catch (StatusRuntimeException e) {
+				System.err.println("Unable to register!");
+				e.printStackTrace();
+			}
 		}
 	}
 
 	public void Log(float value) {
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
-				.usePlaintext(true).build();
-		MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
+		String host = getHost("monitor");
+		int port = getPort("monitor");
 
-		try {
-			ValueLog valueLog = ValueLog.newBuilder().setEntry(registry).setValue(value).build();
-			blockingStub.writeValueLog(valueLog);
-		} catch (StatusRuntimeException e) {
-			System.err.println("Unable to register!");
-			e.printStackTrace();
+		if (host != null && port > 0) {
+			ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
+					.usePlaintext(true).build();
+			MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
+
+			try {
+				ValueLog valueLog = ValueLog.newBuilder().setEntry(registry).setValue(value).build();
+				blockingStub.writeValueLog(valueLog);
+			} catch (StatusRuntimeException e) {
+				System.err.println("Unable to register!");
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -251,15 +261,20 @@ public abstract class JavaServer {
 	}
 
 	private void sendHeartbeat() {
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
-				.usePlaintext(true).build();
-		MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
+		String host = getHost("monitor");
+		int port = getPort("monitor");
 
-		try {
-			blockingStub.receiveHeartbeat(registry);
-		} catch (StatusRuntimeException e) {
-			System.err.println("Unable to register!");
-			e.printStackTrace();
+		if (host != null && port > 0) {
+			ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
+					.usePlaintext(true).build();
+			MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
+
+			try {
+				blockingStub.receiveHeartbeat(registry);
+			} catch (StatusRuntimeException e) {
+				System.err.println("Unable to send heartbeat!");
+				e.printStackTrace();
+			}
 		}
 	}
 

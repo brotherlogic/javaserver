@@ -8,6 +8,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import discovery.Discovery.RegistryEntry;
 import discovery.DiscoveryServiceGrpc;
@@ -161,6 +162,12 @@ public abstract class JavaServer {
 
 				MessageLog messageLog = MessageLog.newBuilder().setEntry(registry).setMessage(message).build();
 				blockingStub.writeMessageLog(messageLog);
+
+				try {
+					channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			} catch (Exception e) {
 				System.err.println("Unable to register!");
 				e.printStackTrace();
@@ -182,6 +189,12 @@ public abstract class JavaServer {
 
 				ValueLog valueLog = ValueLog.newBuilder().setEntry(registry).setValue(value).build();
 				blockingStub.writeValueLog(valueLog);
+
+				try {
+					channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			} catch (Exception e) {
 				System.err.println("Unable to register!");
 				e.printStackTrace();
@@ -261,6 +274,12 @@ public abstract class JavaServer {
 			System.err.println("Unable to register!");
 			e.printStackTrace();
 		}
+
+		try {
+			channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void sendHeartbeat() {
@@ -276,6 +295,11 @@ public abstract class JavaServer {
 				blockingStub.receiveHeartbeat(registry);
 			} catch (StatusRuntimeException e) {
 				System.err.println("Unable to send heartbeat!");
+				e.printStackTrace();
+			}
+			try {
+				channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
@@ -316,6 +340,12 @@ public abstract class JavaServer {
 			response = blockingStub.discover(request);
 		} catch (StatusRuntimeException e) {
 			System.err.println("Unable to find server: " + serverName);
+			e.printStackTrace();
+		}
+
+		try {
+			channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 

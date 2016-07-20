@@ -1,11 +1,14 @@
 package com.github.brotherlogic.javaserver;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -302,6 +305,22 @@ public abstract class JavaServer {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		}
+
+		String toggle = "off";
+		Calendar now = Calendar.getInstance();
+		if (now.get(Calendar.HOUR_OF_DAY) > 6 && now.get(Calendar.HOUR_OF_DAY) < 22) {
+			toggle = "on";
+		}
+
+		// Turn the display off
+		try {
+			Process p = Runtime.getRuntime().exec("xset -display :0.0 dpms force " + toggle);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			for (String line = reader.readLine(); line != null; line = reader.readLine())
+				System.out.println("OUT = " + line);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

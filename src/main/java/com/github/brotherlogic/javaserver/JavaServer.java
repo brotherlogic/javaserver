@@ -34,12 +34,24 @@ public abstract class JavaServer {
 	private String discoveryHost;
 	private int discoveryPort;
 
-	private String getIPAddress() {
+	protected String getIPAddress() {
 		try {
-			return InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e) {
-			return "";
+			Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+			while (ifaces.hasMoreElements()) {
+				NetworkInterface iface = ifaces.nextElement();
+				Enumeration<InetAddress> addresses = iface.getInetAddresses();
+				while (addresses.hasMoreElements()) {
+					InetAddress add = addresses.nextElement();
+					if (!add.isLoopbackAddress() && add.isSiteLocalAddress()) {
+						return add.getHostName();
+					}
+				}
+			}
+		} catch (Exception e) {
+			// Do nothing
 		}
+
+		return "";
 	}
 
 	// From

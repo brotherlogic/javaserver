@@ -35,4 +35,29 @@ public class JavaServerTest {
 		Assert.assertEquals(mac.length(), "b4:18:d1:eb:6c:29".length());
 	}
 
+	@Test
+	public void testGetIp() {
+		JavaServer testServer = new JavaServer() {
+			@Override
+			public String getServerName() {
+				return "testserver";
+			}
+
+			@Override
+			public List<BindableService> getServices() {
+				return new LinkedList<BindableService>();
+			}
+
+			@Override
+			public void localServe() {
+				// Do nothing
+			}
+
+		};
+
+		String ip = testServer.getIPAddress();
+		System.out.println("IP = " + ip);
+		Assert.assertNotEquals("127.0.1.1", ip);
+	}
+
 }

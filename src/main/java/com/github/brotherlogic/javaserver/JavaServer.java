@@ -43,7 +43,8 @@ public abstract class JavaServer {
 				while (addresses.hasMoreElements()) {
 					InetAddress add = addresses.nextElement();
 					if (!add.isLoopbackAddress() && add.isSiteLocalAddress()) {
-						return add.getHostName();
+						if (!add.getHostName().startsWith("127."))
+							return add.getHostName();
 					}
 				}
 			}

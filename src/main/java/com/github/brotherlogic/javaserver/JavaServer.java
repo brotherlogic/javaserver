@@ -34,29 +34,6 @@ public abstract class JavaServer {
 	private String discoveryHost;
 	private int discoveryPort;
 
-	protected String getIPAddress() {
-		try {
-			Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
-			while (ifaces.hasMoreElements()) {
-				NetworkInterface iface = ifaces.nextElement();
-				Enumeration<InetAddress> addresses = iface.getInetAddresses();
-				while (addresses.hasMoreElements()) {
-					InetAddress add = addresses.nextElement();
-					if (!add.isLoopbackAddress() && add.isSiteLocalAddress()) {
-						if (!add.getHostName().startsWith("127.")) {
-							System.out.println("IP = " + add.getHostName());
-							return add.getHostName();
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			// Do nothing
-		}
-
-		return "";
-	}
-
 	// From
 	// http://stackoverflow.com/questions/6164167/get-mac-address-on-local-machine-with-java
 	private static String GetMacAddress(InetAddress ip) {
@@ -154,6 +131,10 @@ public abstract class JavaServer {
 		System.out.println("Returning " + address);
 		return address;
 
+	}
+
+	protected String getIPAddress() {
+		return GetAddress("ip");
 	}
 
 	protected String getMACAddress() {

@@ -43,8 +43,10 @@ public abstract class JavaServer {
 				while (addresses.hasMoreElements()) {
 					InetAddress add = addresses.nextElement();
 					if (!add.isLoopbackAddress() && add.isSiteLocalAddress()) {
-						if (!add.getHostName().startsWith("127."))
+						if (!add.getHostName().startsWith("127.")) {
+							System.out.println("IP = " + add.getHostName());
 							return add.getHostName();
+						}
 					}
 				}
 			}

@@ -100,9 +100,7 @@ public abstract class JavaServer {
 				while (addresses.hasMoreElements()) {
 					InetAddress ip = addresses.nextElement();
 					if (ip instanceof Inet4Address && !ip.getHostAddress().contains("127.0")) {
-
 						if (ip.isSiteLocalAddress()) {
-
 							ipAddress = ip.getHostAddress();
 							lanIp = InetAddress.getByName(ipAddress);
 						}
@@ -153,6 +151,7 @@ public abstract class JavaServer {
 
 		}
 
+		System.out.println("Returning " + address);
 		return address;
 
 	}

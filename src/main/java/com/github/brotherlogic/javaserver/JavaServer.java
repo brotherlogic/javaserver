@@ -304,7 +304,7 @@ public abstract class JavaServer {
 
 		String toggle = "off";
 		Calendar now = Calendar.getInstance();
-		if (now.get(Calendar.HOUR_OF_DAY) > 6 && now.get(Calendar.HOUR_OF_DAY) < 22) {
+		if (now.get(Calendar.HOUR_OF_DAY) >= 6 && now.get(Calendar.HOUR_OF_DAY) < 22) {
 			toggle = "on";
 		}
 

@@ -1,5 +1,13 @@
 package com.github.brotherlogic.javaserver;
 
+import io.grpc.BindableService;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,17 +21,14 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import discovery.Discovery.RegistryEntry;
-import discovery.DiscoveryServiceGrpc;
-import io.grpc.BindableService;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
-import io.grpc.StatusRuntimeException;
 import monitorproto.MonitorServiceGrpc;
 import monitorproto.Monitorproto.MessageLog;
 import monitorproto.Monitorproto.ValueLog;
+import server.ServerGrpc;
+import server.ServerOuterClass.ChangeRequest;
+import server.ServerOuterClass.Empty;
+import discovery.Discovery.RegistryEntry;
+import discovery.DiscoveryServiceGrpc;
 
 public abstract class JavaServer {
 
@@ -33,6 +38,11 @@ public abstract class JavaServer {
 
 	private String discoveryHost;
 	private int discoveryPort;
+	private boolean screenOn = true;
+
+	public void setOn(boolean screen) {
+		screenOn = screen;
+	}
 
 	// From
 	// http://stackoverflow.com/questions/6164167/get-mac-address-on-local-machine-with-java
@@ -45,7 +55,8 @@ public abstract class JavaServer {
 
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < mac.length; i++) {
-				sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+				sb.append(String.format("%02X%s", mac[i],
+						(i < mac.length - 1) ? "-" : ""));
 			}
 			address = sb.toString();
 
@@ -76,7 +87,8 @@ public abstract class JavaServer {
 				Enumeration<InetAddress> addresses = element.getInetAddresses();
 				while (addresses.hasMoreElements()) {
 					InetAddress ip = addresses.nextElement();
-					if (ip instanceof Inet4Address && !ip.getHostAddress().contains("127.0")) {
+					if (ip instanceof Inet4Address
+							&& !ip.getHostAddress().contains("127.0")) {
 						if (ip.isSiteLocalAddress()) {
 							ipAddress = ip.getHostAddress();
 							lanIp = InetAddress.getByName(ipAddress);
@@ -143,6 +155,15 @@ public abstract class JavaServer {
 
 	private Server server;
 
+	public List<BindableService> getLocalServices() {
+		List<BindableService> services = getServices();
+
+		// Add the change service in here
+		services.add(new ServerService(this));
+
+		return services;
+	}
+
 	public abstract List<BindableService> getServices();
 
 	private boolean running = true;
@@ -153,12 +174,14 @@ public abstract class JavaServer {
 
 		if (host != null && port > 0) {
 			try {
-				ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
+				ManagedChannel channel = ManagedChannelBuilder
+						.forAddress(getHost("monitor"), getPort("monitor"))
 						.usePlaintext(true).build();
 				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
 						.newBlockingStub(channel);
 
-				MessageLog messageLog = MessageLog.newBuilder().setEntry(registry).setMessage(message).build();
+				MessageLog messageLog = MessageLog.newBuilder()
+						.setEntry(registry).setMessage(message).build();
 				blockingStub.writeMessageLog(messageLog);
 
 				try {
@@ -180,12 +203,14 @@ public abstract class JavaServer {
 		if (host != null && port > 0) {
 			try {
 
-				ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
+				ManagedChannel channel = ManagedChannelBuilder
+						.forAddress(getHost("monitor"), getPort("monitor"))
 						.usePlaintext(true).build();
 				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
 						.newBlockingStub(channel);
 
-				ValueLog valueLog = ValueLog.newBuilder().setEntry(registry).setValue(value).build();
+				ValueLog valueLog = ValueLog.newBuilder().setEntry(registry)
+						.setValue(value).build();
 				blockingStub.writeValueLog(valueLog);
 
 				try {
@@ -197,6 +222,23 @@ public abstract class JavaServer {
 				System.err.println("Unable to register!");
 				e.printStackTrace();
 			}
+		}
+	}
+
+	private static class ServerService extends ServerGrpc.AbstractServer {
+
+		public ServerService(JavaServer in) {
+			localServer = in;
+		}
+
+		private JavaServer localServer;
+
+		@Override
+		public void change(ChangeRequest request,
+				StreamObserver<Empty> responseObserver) {
+			localServer.setOn(request.getScreenOn());
+			responseObserver.onNext(Empty.getDefaultInstance());
+			responseObserver.onCompleted();
 		}
 	}
 
@@ -224,7 +266,8 @@ public abstract class JavaServer {
 
 		if (getServices().size() > 0) {
 			try {
-				ServerBuilder builder = ServerBuilder.forPort(registry.getPort());
+				ServerBuilder builder = ServerBuilder.forPort(registry
+						.getPort());
 				for (BindableService service : getServices())
 					builder.addService(service);
 				server = builder.build().start();
@@ -261,10 +304,13 @@ public abstract class JavaServer {
 	private void register(String host, int port) {
 		this.discoveryHost = host;
 		this.discoveryPort = port;
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
-		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);
+		ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
+				.usePlaintext(true).build();
+		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc
+				.newBlockingStub(channel);
 
-		RegistryEntry request = RegistryEntry.newBuilder().setName(getServerName()).setIp(getIPAddress())
+		RegistryEntry request = RegistryEntry.newBuilder()
+				.setName(getServerName()).setIp(getIPAddress())
 				.setIdentifier(getMACAddress()).build();
 		try {
 			registry = blockingStub.registerService(request);
@@ -285,9 +331,11 @@ public abstract class JavaServer {
 		int port = getPort("monitor");
 
 		if (host != null && port > 0) {
-			ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
+			ManagedChannel channel = ManagedChannelBuilder
+					.forAddress(getHost("monitor"), getPort("monitor"))
 					.usePlaintext(true).build();
-			MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
+			MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
+					.newBlockingStub(channel);
 
 			try {
 				blockingStub.receiveHeartbeat(registry);
@@ -304,15 +352,19 @@ public abstract class JavaServer {
 
 		String toggle = "off";
 		Calendar now = Calendar.getInstance();
-		if (now.get(Calendar.HOUR_OF_DAY) >= 7 && now.get(Calendar.HOUR_OF_DAY) < 22) {
+		if (screenOn && now.get(Calendar.HOUR_OF_DAY) >= 7
+				&& now.get(Calendar.HOUR_OF_DAY) < 22) {
 			toggle = "on";
 		}
 
 		// Turn the display off
 		try {
-			Process p = Runtime.getRuntime().exec("xset -display :0.0 dpms force " + toggle);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			for (String line = reader.readLine(); line != null; line = reader.readLine())
+			Process p = Runtime.getRuntime().exec(
+					"xset -display :0.0 dpms force " + toggle);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					p.getInputStream()));
+			for (String line = reader.readLine(); line != null; line = reader
+					.readLine())
 				System.out.println("OUT = " + line);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -344,12 +396,15 @@ public abstract class JavaServer {
 	}
 
 	private RegistryEntry resolveServer(String serverName) {
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(discoveryHost, discoveryPort).usePlaintext(true)
+		ManagedChannel channel = ManagedChannelBuilder
+				.forAddress(discoveryHost, discoveryPort).usePlaintext(true)
 				.build();
-		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);
+		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc
+				.newBlockingStub(channel);
 
 		RegistryEntry response = null;
-		RegistryEntry request = RegistryEntry.newBuilder().setName(serverName).build();
+		RegistryEntry request = RegistryEntry.newBuilder().setName(serverName)
+				.build();
 		try {
 			response = blockingStub.discover(request);
 		} catch (StatusRuntimeException e) {

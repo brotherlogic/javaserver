@@ -21,9 +21,13 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 import monitorproto.MonitorServiceGrpc;
 import monitorproto.Monitorproto.MessageLog;
 import monitorproto.Monitorproto.ValueLog;
+import server.ServerGrpc;
+import server.ServerOuterClass;
+import server.ServerOuterClass.ChangeRequest;
 
 public abstract class JavaServer {
 
@@ -33,6 +37,11 @@ public abstract class JavaServer {
 
 	private String discoveryHost;
 	private int discoveryPort;
+	private boolean screenOn = true;
+
+	public void setOn(boolean screen) {
+		screenOn = screen;
+	}
 
 	// From
 	// http://stackoverflow.com/questions/6164167/get-mac-address-on-local-machine-with-java
@@ -143,6 +152,15 @@ public abstract class JavaServer {
 
 	private Server server;
 
+	public List<BindableService> getLocalServices() {
+		List<BindableService> services = getServices();
+
+		// Add the change service in here
+		services.add(new ServerService(this));
+
+		return services;
+	}
+
 	public abstract List<BindableService> getServices();
 
 	private boolean running = true;
@@ -197,6 +215,22 @@ public abstract class JavaServer {
 				System.err.println("Unable to register!");
 				e.printStackTrace();
 			}
+		}
+	}
+
+	private static class ServerService extends ServerGrpc.AbstractServer {
+
+		public ServerService(JavaServer in) {
+			localServer = in;
+		}
+
+		private JavaServer localServer;
+
+		@Override
+		public void change(ChangeRequest request, StreamObserver<ServerOuterClass.Empty> responseObserver) {
+			localServer.setOn(request.getScreenOn());
+			responseObserver.onNext(ServerOuterClass.Empty.getDefaultInstance());
+			responseObserver.onCompleted();
 		}
 	}
 
@@ -304,7 +338,7 @@ public abstract class JavaServer {
 
 		String toggle = "off";
 		Calendar now = Calendar.getInstance();
-		if (now.get(Calendar.HOUR_OF_DAY) >= 7 && now.get(Calendar.HOUR_OF_DAY) < 22) {
+		if (screenOn && now.get(Calendar.HOUR_OF_DAY) >= 7 && now.get(Calendar.HOUR_OF_DAY) < 22) {
 			toggle = "on";
 		}
 

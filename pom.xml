@@ -5,7 +5,7 @@
   <groupId>com.github.brotherlogic.javaserver</groupId>
   <artifactId>javaserver</artifactId>
   <packaging>jar</packaging>
-  <version>0.20-SNAPSHOT</version>
+  <version>0.23-SNAPSHOT</version>
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Java serving framework</description>

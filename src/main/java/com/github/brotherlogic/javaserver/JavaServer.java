@@ -284,7 +284,7 @@ public abstract class JavaServer {
 		String host = getHost("monitor");
 		int port = getPort("monitor");
 
-		if (host != null && port > 0) {
+		if (host != null && port > 0 && registry != null) {
 			ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
 					.usePlaintext(true).build();
 			MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);

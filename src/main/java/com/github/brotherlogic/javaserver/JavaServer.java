@@ -7,6 +7,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -34,7 +35,6 @@ public abstract class JavaServer {
 	public abstract String getServerName();
 
 	private RegistryEntry registry;
-
 	private String discoveryHost;
 	private int discoveryPort;
 	private boolean screenOn = true;
@@ -234,8 +234,31 @@ public abstract class JavaServer {
 		}
 	}
 
-	public void Serve(String discoveryHost, int discoveryPort) {
+	private void discover(String server) {
+		while (discoveryHost == null || discoveryHost.length() == 0) {
+			try {
+				URL url = new URL(server + "resolve");
 
+				BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+				String[] elems = reader.readLine().split(":");
+				discoveryHost = elems[0];
+				discoveryPort = Integer.parseInt(elems[1]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void Serve(String resolveServer) {
+
+		System.out.println("Seeking discovery server: " + resolveServer);
+
+		discover(resolveServer);
 		register(discoveryHost, discoveryPort);
 
 		Thread heartbeat = new Thread(new Runnable() {

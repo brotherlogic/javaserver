@@ -237,7 +237,11 @@ public abstract class JavaServer {
 	private void discover(String server) {
 		while (discoveryHost == null || discoveryHost.length() == 0) {
 			try {
-				URL url = new URL(server + "resolve");
+				String add = "resolve";
+				if (!server.endsWith("/")) {
+					add = "/resolve";
+				}
+				URL url = new URL(server + add);
 
 				BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
 				String[] elems = reader.readLine().split(":");

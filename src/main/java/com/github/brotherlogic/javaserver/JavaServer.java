@@ -241,7 +241,7 @@ public abstract class JavaServer {
 				if (!server.endsWith("/")) {
 					add = "/resolve";
 				}
-				URL url = new URL(server + add);
+				URL url = new URL("http://" + server + add);
 
 				BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
 				String[] elems = reader.readLine().split(":");

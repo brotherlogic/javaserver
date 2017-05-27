@@ -263,7 +263,15 @@ public abstract class JavaServer {
 		System.out.println("Seeking discovery server: " + resolveServer);
 
 		discover(resolveServer);
-		register(discoveryHost, discoveryPort);
+
+		while (!register(discoveryHost, discoveryPort)) {
+			System.out.println("Unable to register - waiting 10 seconds");
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 
 		Thread heartbeat = new Thread(new Runnable() {
 			@Override
@@ -319,7 +327,7 @@ public abstract class JavaServer {
 	 * @param port
 	 *            Port number of the discovery server
 	 */
-	private void register(String host, int port) {
+	private boolean register(String host, int port) {
 		this.discoveryHost = host;
 		this.discoveryPort = port;
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
@@ -339,6 +347,8 @@ public abstract class JavaServer {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+
+		return registry != null && registry.getPort() > 0;
 	}
 
 	private void sendHeartbeat() {

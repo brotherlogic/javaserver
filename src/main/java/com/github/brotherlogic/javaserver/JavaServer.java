@@ -26,7 +26,7 @@ import io.grpc.stub.StreamObserver;
 import monitorproto.MonitorServiceGrpc;
 import monitorproto.Monitorproto.MessageLog;
 import monitorproto.Monitorproto.ValueLog;
-import server.ServerGrpc;
+import server.ServerGrpc.AbstractServer;
 import server.ServerOuterClass;
 import server.ServerOuterClass.ChangeRequest;
 
@@ -171,8 +171,7 @@ public abstract class JavaServer {
 
 		if (host != null && port > 0) {
 			try {
-				ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
-						.usePlaintext(true).build();
+				ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
 				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
 						.newBlockingStub(channel);
 
@@ -198,8 +197,7 @@ public abstract class JavaServer {
 		if (host != null && port > 0) {
 			try {
 
-				ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
-						.usePlaintext(true).build();
+				ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
 				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
 						.newBlockingStub(channel);
 
@@ -218,7 +216,7 @@ public abstract class JavaServer {
 		}
 	}
 
-	private static class ServerService extends ServerGrpc.AbstractServer {
+	private static class ServerService extends AbstractServer {
 
 		public ServerService(JavaServer in) {
 			localServer = in;
@@ -356,20 +354,24 @@ public abstract class JavaServer {
 		int port = getPort("monitor");
 
 		if (host != null && port > 0 && registry != null) {
-			ManagedChannel channel = ManagedChannelBuilder.forAddress(getHost("monitor"), getPort("monitor"))
-					.usePlaintext(true).build();
-			MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc.newBlockingStub(channel);
+			try {
+				ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
+				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
+						.newBlockingStub(channel);
 
-			try {
-				blockingStub.receiveHeartbeat(registry);
-			} catch (StatusRuntimeException e) {
-				System.err.println("Unable to send heartbeat!");
-				e.printStackTrace();
-			}
-			try {
-				channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+				try {
+					blockingStub.receiveHeartbeat(registry);
+				} catch (StatusRuntimeException e) {
+					System.err.println("Unable to send heartbeat!");
+					e.printStackTrace();
+				}
+				try {
+					channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			} catch (Exception e) {
+				System.err.println("Unknown error in heartbeat: " + e);
 			}
 		}
 

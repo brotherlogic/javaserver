@@ -233,7 +233,8 @@ public abstract class JavaServer {
 	}
 
 	private void discover(String server) {
-		while (discoveryHost == null || discoveryHost.length() == 0) {
+		
+		while (discoveryHost == null || discoveryHost.length() == 0 || discoveryPort < 0) {
 			try {
 				String add = "resolve";
 				if (!server.endsWith("/")) {

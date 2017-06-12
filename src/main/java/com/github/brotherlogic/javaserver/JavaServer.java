@@ -256,10 +256,12 @@ public abstract class JavaServer {
 		}
 	}
 
+	private String rServer;
+
 	public void Serve(String resolveServer) {
 
 		System.out.println("Seeking discovery server: " + resolveServer);
-
+		this.rServer = resolveServer;
 		discover(resolveServer);
 
 		while (!register(discoveryHost, discoveryPort)) {
@@ -417,6 +419,11 @@ public abstract class JavaServer {
 	}
 
 	private RegistryEntry resolveServer(String serverName) {
+
+		if (discoveryPort < 0) {
+			discover(rServer);
+		}
+
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(discoveryHost, discoveryPort).usePlaintext(true)
 				.build();
 		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);
@@ -428,6 +435,9 @@ public abstract class JavaServer {
 		} catch (StatusRuntimeException e) {
 			System.err.println("Unable to find server: " + serverName);
 			e.printStackTrace();
+
+			// Let's see if we need to rediscover discover
+			discoveryPort = -1;
 		}
 
 		try {

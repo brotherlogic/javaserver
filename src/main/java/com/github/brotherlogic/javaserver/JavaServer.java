@@ -233,7 +233,7 @@ public abstract class JavaServer {
 	}
 
 	private void discover(String server) {
-		
+
 		while (discoveryHost == null || discoveryHost.length() == 0 || discoveryPort < 0) {
 			try {
 				String add = "resolve";
@@ -358,12 +358,16 @@ public abstract class JavaServer {
 
 		if (host != null && port > 0 && registry != null) {
 			try {
+				System.err.println("Connecting to monitor at " + host + " and " + port);
 				ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
+				System.err.println("Built channel");
 				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
 						.newBlockingStub(channel);
+				System.err.println("Got STub");
 
 				try {
 					blockingStub.receiveHeartbeat(registry);
+					System.err.println("Sent heartbeat");
 				} catch (StatusRuntimeException e) {
 					System.err.println("Unable to send heartbeat!");
 					e.printStackTrace();

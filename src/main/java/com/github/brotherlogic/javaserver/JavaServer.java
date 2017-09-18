@@ -280,7 +280,7 @@ public abstract class JavaServer {
 				while (running) {
 					try {
 						System.out.println("Sleeping!");
-						Thread.sleep(60 * 1000);
+						Thread.sleep(5 * 60 * 1000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -291,6 +291,21 @@ public abstract class JavaServer {
 			}
 		});
 		heartbeat.start();
+		
+		Thread screen = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (running) {
+					try {
+						Thread.sleep(60 * 1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					dealWithScreen();
+				}
+			}
+		});
+		screen.start();
 
 		if (getServices().size() > 0) {
 			try {
@@ -351,6 +366,24 @@ public abstract class JavaServer {
 
 		return registry != null && registry.getPort() > 0;
 	}
+	
+	private void dealWithScreen() {
+		String toggle = "off";
+		Calendar now = Calendar.getInstance();
+		if (screenOn && now.get(Calendar.HOUR_OF_DAY) >= 7 && now.get(Calendar.HOUR_OF_DAY) < 22) {
+			toggle = "on";
+		}
+
+		// Turn the display off
+		try {
+			Process p = Runtime.getRuntime().exec("xset -display :0.0 dpms force " + toggle);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			for (String line = reader.readLine(); line != null; line = reader.readLine())
+				System.out.println("OUT = " + line);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	private void sendHeartbeat() {
 		String host = getHost("monitor");
@@ -380,22 +413,6 @@ public abstract class JavaServer {
 			} catch (Exception e) {
 				System.err.println("Unknown error in heartbeat: " + e);
 			}
-		}
-
-		String toggle = "off";
-		Calendar now = Calendar.getInstance();
-		if (screenOn && now.get(Calendar.HOUR_OF_DAY) >= 7 && now.get(Calendar.HOUR_OF_DAY) < 22) {
-			toggle = "on";
-		}
-
-		// Turn the display off
-		try {
-			Process p = Runtime.getRuntime().exec("xset -display :0.0 dpms force " + toggle);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			for (String line = reader.readLine(); line != null; line = reader.readLine())
-				System.out.println("OUT = " + line);
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 

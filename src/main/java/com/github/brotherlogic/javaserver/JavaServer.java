@@ -280,7 +280,8 @@ public abstract class JavaServer {
 				while (running) {
 					try {
 						System.out.println("Sleeping!");
-						Thread.sleep(5 * 60 * 1000);
+						// Heartbeat every hour
+						Thread.sleep(60 * 60 * 1000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -291,7 +292,7 @@ public abstract class JavaServer {
 			}
 		});
 		heartbeat.start();
-		
+
 		Thread screen = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -366,7 +367,7 @@ public abstract class JavaServer {
 
 		return registry != null && registry.getPort() > 0;
 	}
-	
+
 	private void dealWithScreen() {
 		String toggle = "off";
 		Calendar now = Calendar.getInstance();

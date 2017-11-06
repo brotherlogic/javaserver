@@ -40,7 +40,7 @@ public class NetworkObject {
 		}
 	}
 
-	public ManagedChannel Dial(String base, String server) {
+	public ManagedChannel dial(String base, String server) {
 		RegistryEntry entry = resolveServer(base, server);
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(entry.getIp(), entry.getPort()).usePlaintext(true)
 				.build();

@@ -13,8 +13,8 @@ import io.grpc.StatusRuntimeException;
 
 public class NetworkObject {
 
-	String discoveryHost;
-	int discoveryPort;
+	String discoveryHost = "";
+	int discoveryPort = -1;
 
 	private void discover(String server) {
 		while (discoveryHost == null || discoveryHost.length() == 0 || discoveryPort < 0) {

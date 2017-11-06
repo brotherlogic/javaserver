@@ -52,6 +52,10 @@ public class NetworkObject {
 			discover(base);
 		}
 
+		if (serverName.equals("discovery")) {
+			return RegistryEntry.newBuilder().setIp(discoveryHost).setPort(discoveryPort).build();
+		}
+
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(discoveryHost, discoveryPort).usePlaintext(true)
 				.build();
 		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);

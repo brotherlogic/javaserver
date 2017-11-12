@@ -173,7 +173,7 @@ public abstract class JavaServer {
 			try {
 				ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
 				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
-						.newBlockingStub(channel);
+						.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
 
 				MessageLog messageLog = MessageLog.newBuilder().setEntry(registry).setMessage(message).build();
 				blockingStub.writeMessageLog(messageLog);
@@ -199,7 +199,7 @@ public abstract class JavaServer {
 
 				ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
 				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
-						.newBlockingStub(channel);
+						.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
 
 				ValueLog valueLog = ValueLog.newBuilder().setEntry(registry).setValue(value).build();
 				blockingStub.writeValueLog(valueLog);
@@ -348,7 +348,7 @@ public abstract class JavaServer {
 		this.discoveryHost = host;
 		this.discoveryPort = port;
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
-		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);
+		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
 
 		RegistryEntry request = RegistryEntry.newBuilder().setName(getServerName()).setIp(getIPAddress())
 				.setIdentifier(getMACAddress()).build();
@@ -396,7 +396,7 @@ public abstract class JavaServer {
 				ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
 				System.err.println("Built channel");
 				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
-						.newBlockingStub(channel);
+						.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
 				System.err.println("Got STub");
 
 				try {
@@ -449,7 +449,7 @@ public abstract class JavaServer {
 
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(discoveryHost, discoveryPort).usePlaintext(true)
 				.build();
-		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);
+		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
 
 		RegistryEntry response = null;
 		RegistryEntry request = RegistryEntry.newBuilder().setName(serverName).build();

@@ -58,7 +58,7 @@ public class NetworkObject {
 
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(discoveryHost, discoveryPort).usePlaintext(true)
 				.build();
-		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel);
+		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
 
 		RegistryEntry response = null;
 		RegistryEntry request = RegistryEntry.newBuilder().setName(serverName).build();

@@ -30,6 +30,8 @@ import server.ServerGrpc.AbstractServer;
 import server.ServerOuterClass;
 import server.ServerOuterClass.ChangeRequest;
 
+import java.util.logging.LogManager;
+
 public abstract class JavaServer {
 
 	public abstract String getServerName();
@@ -137,7 +139,6 @@ public abstract class JavaServer {
 
 		}
 
-		System.out.println("Returning " + address);
 		return address;
 
 	}
@@ -184,7 +185,6 @@ public abstract class JavaServer {
 					e.printStackTrace();
 				}
 			} catch (Exception e) {
-				System.err.println("Unable to register!");
 				e.printStackTrace();
 			}
 		}
@@ -210,7 +210,6 @@ public abstract class JavaServer {
 					e.printStackTrace();
 				}
 			} catch (Exception e) {
-				System.err.println("Unable to register!");
 				e.printStackTrace();
 			}
 		}
@@ -260,13 +259,11 @@ public abstract class JavaServer {
 	private String rServer;
 
 	public void Serve(String resolveServer) {
-
-		System.out.println("Seeking discovery server: " + resolveServer);
+			LogManager.getLogManager().reset();
 		this.rServer = resolveServer;
 		discover(resolveServer);
 
 		while (!register(discoveryHost, discoveryPort)) {
-			System.out.println("Unable to register - waiting 10 seconds");
 			try {
 				Thread.sleep(10000);
 			} catch (InterruptedException e) {
@@ -279,14 +276,12 @@ public abstract class JavaServer {
 			public void run() {
 				while (running) {
 					try {
-						System.out.println("Sleeping!");
 						// Heartbeat every hour
 						Thread.sleep(60 * 60 * 1000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 
-					System.out.println("Sending heartbeat");
 					sendHeartbeat();
 				}
 			}
@@ -338,7 +333,7 @@ public abstract class JavaServer {
 
 	/**
 	 * Registers us with the discovery server
-	 * 
+	 *
 	 * @param host
 	 *            Hostname of the discovery server
 	 * @param port
@@ -355,7 +350,6 @@ public abstract class JavaServer {
 		try {
 			registry = blockingStub.registerService(request);
 		} catch (StatusRuntimeException e) {
-			System.err.println("Unable to register!");
 			e.printStackTrace();
 		}
 
@@ -379,8 +373,7 @@ public abstract class JavaServer {
 		try {
 			Process p = Runtime.getRuntime().exec("xset -display :0.0 dpms force " + toggle);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			for (String line = reader.readLine(); line != null; line = reader.readLine())
-				System.out.println("OUT = " + line);
+			for (String line = reader.readLine(); line != null; line = reader.readLine()){}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -392,18 +385,13 @@ public abstract class JavaServer {
 
 		if (host != null && port > 0 && registry != null) {
 			try {
-				System.err.println("Connecting to monitor at " + host + " and " + port);
 				ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
-				System.err.println("Built channel");
 				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
 						.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
-				System.err.println("Got STub");
 
 				try {
 					blockingStub.receiveHeartbeat(registry);
-					System.err.println("Sent heartbeat");
 				} catch (StatusRuntimeException e) {
-					System.err.println("Unable to send heartbeat!");
 					e.printStackTrace();
 				}
 				try {
@@ -412,7 +400,7 @@ public abstract class JavaServer {
 					e.printStackTrace();
 				}
 			} catch (Exception e) {
-				System.err.println("Unknown error in heartbeat: " + e);
+				e.printStackTrace();
 			}
 		}
 	}
@@ -456,7 +444,6 @@ public abstract class JavaServer {
 		try {
 			response = blockingStub.discover(request);
 		} catch (StatusRuntimeException e) {
-			System.err.println("Unable to find server: " + serverName);
 			e.printStackTrace();
 
 			// Let's see if we need to rediscover discover

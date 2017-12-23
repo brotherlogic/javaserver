@@ -65,7 +65,6 @@ public class NetworkObject {
 		try {
 			response = blockingStub.discover(request);
 		} catch (StatusRuntimeException e) {
-			System.err.println("Unable to find server: " + serverName);
 			e.printStackTrace();
 
 			// Let's see if we need to rediscover discover

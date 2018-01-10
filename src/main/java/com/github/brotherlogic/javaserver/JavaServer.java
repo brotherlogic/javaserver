@@ -345,9 +345,10 @@ public abstract class JavaServer {
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
 		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
 
-		RegistryEntry request = RegistryEntry.newBuilder().setName(getServerName()).setIp(getIPAddress())
-				.setIdentifier(getMACAddress()).build();
-		try {
+		//Clean this after three hours
+		RegistryEntry request = RegistryEntry.newBuilder().setName(getServerName()).setIp(getIPAddress()).setTimeToClean(1000*60*3)
+                .setIdentifier(getMACAddress()).build();
+        try {
 			registry = blockingStub.registerService(request);
 		} catch (StatusRuntimeException e) {
 			e.printStackTrace();

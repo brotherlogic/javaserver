@@ -346,7 +346,7 @@ public abstract class JavaServer {
 		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
 
 		//Clean this after three hours
-		RegistryEntry request = RegistryEntry.newBuilder().setName(getServerName()).setIp(getIPAddress()).setTimeToClean(1000*60*3)
+		RegistryEntry request = RegistryEntry.newBuilder().setName(getServerName()).setIp(getIPAddress()).setTimeToClean(1000*60*60*3)
                 .setIdentifier(getMACAddress()).build();
         try {
 			registry = blockingStub.registerService(request);

@@ -335,6 +335,41 @@ public abstract class JavaServer {
 		}
 	}
 
+    /**
+     * Registers us with the discovery server
+     *
+     * @param host
+     *            Hostname of the discovery server
+     * @param port
+     *            Port number of the discovery server
+     */
+    private boolean reRegister(String host, int port) {
+        ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
+        DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
+
+        // Get a better host name
+        String serverName = getMACAddress();
+        try{
+            serverName = getHostName();
+        } catch (UnknownHostException e){
+            e.printStackTrace();
+        }
+
+        try {
+            registry = blockingStub.registerService(registry);
+        } catch (StatusRuntimeException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return registry != null && registry.getPort() > 0;
+    }
+
 	/**
 	 * Registers us with the discovery server
 	 *
@@ -393,29 +428,13 @@ public abstract class JavaServer {
 	}
 
 	private void sendHeartbeat() {
-		String host = getHost("monitor");
-		int port = getPort("monitor");
-
-		if (host != null && port > 0 && registry != null) {
-			try {
-				ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
-				MonitorServiceGrpc.MonitorServiceBlockingStub blockingStub = MonitorServiceGrpc
-						.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
-
-				try {
-					blockingStub.receiveHeartbeat(registry);
-				} catch (StatusRuntimeException e) {
-					e.printStackTrace();
-				}
-				try {
-					channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+        while(!reRegister(discoveryHost, discoveryPort)) {
+            try {
+                Thread.sleep(10*1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 	}
 
 	public String getHost() {

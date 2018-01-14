@@ -45,6 +45,10 @@ public abstract class JavaServer {
 		screenOn = screen;
 	}
 
+	public String getHostName() throws UnknownHostException {
+		return InetAddress.getLocalHost().getHostName();
+	}
+
 	// From
 	// http://stackoverflow.com/questions/6164167/get-mac-address-on-local-machine-with-java
 	private static String GetMacAddress(InetAddress ip) {
@@ -345,9 +349,17 @@ public abstract class JavaServer {
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
 		DiscoveryServiceGrpc.DiscoveryServiceBlockingStub blockingStub = DiscoveryServiceGrpc.newBlockingStub(channel).withDeadlineAfter(1, TimeUnit.SECONDS);
 
-		//Clean this after three hours
+		// Get a better host name
+        String serverName = getMACAddress();
+        try{
+            serverName = getHostName();
+        } catch (UnknownHostException e){
+            e.printStackTrace();
+        }
+
+        //Clean this after three hours
 		RegistryEntry request = RegistryEntry.newBuilder().setName(getServerName()).setIp(getIPAddress()).setTimeToClean(1000*60*60*3)
-                .setIdentifier(getMACAddress()).build();
+                .setIdentifier(serverName).build();
         try {
 			registry = blockingStub.registerService(request);
 		} catch (StatusRuntimeException e) {

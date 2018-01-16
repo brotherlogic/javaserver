@@ -398,6 +398,7 @@ public abstract class JavaServer {
         try {
 			registry = blockingStub.registerService(request);
 		} catch (StatusRuntimeException e) {
+        	System.err.println("FAILURE TO REGISTER ON " + host + ":" + port);
 			e.printStackTrace();
 		}
 

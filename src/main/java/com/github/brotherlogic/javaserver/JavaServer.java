@@ -393,7 +393,7 @@ public abstract class JavaServer {
         }
 
         //Clean this after three hours
-		RegistryEntry request = RegistryEntry.newBuilder().setName(getServerName()).setIp(getIPAddress()).setTimeToClean(1000*60*60*3)
+		RegistryEntry request = RegistryEntry.newBuilder().setName(getServerName()).setIp(getIPAddress()).setTimeToClean(1000*60*60*3).setIgnoresMaster(true)
                 .setIdentifier(serverName).build();
         try {
 			registry = blockingStub.registerService(request);

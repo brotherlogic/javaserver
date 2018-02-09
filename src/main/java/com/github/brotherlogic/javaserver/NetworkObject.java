@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import discovery.Discovery.RegistryEntry;
+import discovery.Discovery.DiscoverRequest;
 import discovery.DiscoveryServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -63,7 +64,7 @@ public class NetworkObject {
 		RegistryEntry response = null;
 		RegistryEntry request = RegistryEntry.newBuilder().setName(serverName).build();
 		try {
-			response = blockingStub.discover(request);
+			response = blockingStub.discover(DiscoverRequest.newBuilder().setRequest(request).build()).getService();
 		} catch (StatusRuntimeException e) {
 			e.printStackTrace();
 

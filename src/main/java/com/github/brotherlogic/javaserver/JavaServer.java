@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import discovery.Discovery.RegistryEntry;
+import discovery.Discovery.RegisterRequest;
+import discovery.Discovery.RegisterResponse;
+import discovery.Discovery.DiscoverRequest;
 import discovery.DiscoveryServiceGrpc;
 import io.grpc.BindableService;
 import io.grpc.ManagedChannel;
@@ -355,8 +358,10 @@ public abstract class JavaServer {
             e.printStackTrace();
         }
 
+        RegisterResponse resp = null;
         try {
-            registry = blockingStub.registerService(registry);
+            resp = blockingStub.registerService(RegisterRequest.newBuilder().setService(registry).build());
+            registry = resp.getService();
         } catch (StatusRuntimeException e) {
             e.printStackTrace();
         }
@@ -367,7 +372,7 @@ public abstract class JavaServer {
             e.printStackTrace();
         }
 
-        return registry != null && registry.getPort() > 0;
+        return resp != null && resp.getService().getPort() > 0;
     }
 
 	/**
@@ -396,7 +401,7 @@ public abstract class JavaServer {
 		RegistryEntry request = RegistryEntry.newBuilder().setName(getServerName()).setIp(getIPAddress()).setTimeToClean(1000*60*60*3).setIgnoresMaster(true)
                 .setIdentifier(serverName).build();
         try {
-			registry = blockingStub.registerService(request);
+			registry = blockingStub.registerService(RegisterRequest.newBuilder().setService(request).build()).getService();
 		} catch (StatusRuntimeException e) {
         	System.err.println("FAILURE TO REGISTER ON " + host + ":" + port);
 			e.printStackTrace();
@@ -475,7 +480,7 @@ public abstract class JavaServer {
 		RegistryEntry response = null;
 		RegistryEntry request = RegistryEntry.newBuilder().setName(serverName).build();
 		try {
-			response = blockingStub.discover(request);
+			response = blockingStub.discover(DiscoverRequest.newBuilder().setRequest(request).build()).getService();
 		} catch (StatusRuntimeException e) {
 			e.printStackTrace();
 

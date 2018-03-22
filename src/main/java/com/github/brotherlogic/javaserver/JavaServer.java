@@ -44,6 +44,13 @@ public abstract class JavaServer {
 	private int discoveryPort;
 	private boolean screenOn = true;
 
+	private int onTime = 7;
+	private int offTime = 22;
+
+	public void setTime(int on, int off) {
+		onTime = on;
+		offTime = off;
+	}
 	public void setOn(boolean screen) {
 		screenOn = screen;
 	}
@@ -419,7 +426,7 @@ public abstract class JavaServer {
 	private void dealWithScreen() {
 		String toggle = "off";
 		Calendar now = Calendar.getInstance();
-		if (screenOn && now.get(Calendar.HOUR_OF_DAY) >= 7 && now.get(Calendar.HOUR_OF_DAY) < 22) {
+		if (screenOn && now.get(Calendar.HOUR_OF_DAY) >= onTime && now.get(Calendar.HOUR_OF_DAY) < offTime) {
 			toggle = "on";
 		}
 

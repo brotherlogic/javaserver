@@ -370,13 +370,13 @@ public abstract class JavaServer {
             resp = blockingStub.registerService(RegisterRequest.newBuilder().setService(registry).build());
             registry = resp.getService();
         } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+	    //Pass
         }
 
         try {
             channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+	    //Pass
         }
 
         return resp != null && resp.getService().getPort() > 0;
@@ -401,7 +401,7 @@ public abstract class JavaServer {
         try{
             serverName = getHostName();
         } catch (UnknownHostException e){
-            e.printStackTrace();
+	    // Pass
         }
 
         //Clean this after three hours
@@ -410,14 +410,13 @@ public abstract class JavaServer {
         try {
 			registry = blockingStub.registerService(RegisterRequest.newBuilder().setService(request).build()).getService();
 		} catch (StatusRuntimeException e) {
-        	System.err.println("FAILURE TO REGISTER ON " + host + ":" + port);
-			e.printStackTrace();
-		}
+	    //Pass
+	}
 
 		try {
 			channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+		    //Pass
 		}
 
 		return registry != null && registry.getPort() > 0;

@@ -253,7 +253,7 @@ public abstract class JavaServer {
 				if (!server.endsWith("/")) {
 					add = "/resolve";
 				}
-				URL url = new URL("http://" + server + add);
+				URL url = new URL("https://" + server + add);
 
 				BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
 				String[] elems = reader.readLine().split(":");
@@ -486,7 +486,7 @@ public abstract class JavaServer {
 		RegistryEntry response = null;
 		RegistryEntry request = RegistryEntry.newBuilder().setName(serverName).build();
 		try {
-			response = blockingStub.discover(DiscoverRequest.newBuilder().setRequest(request).build()).getService();
+		    response = blockingStub.discover(DiscoverRequest.newBuilder().setCaller("javaserver").setRequest(request).build()).getService();
 		} catch (StatusRuntimeException e) {
 			e.printStackTrace();
 
